@@ -1,11 +1,10 @@
 #![feature(macro_rules)]
 
-use std::rc::{Rc};
-use std::cell::{RefCell};
 use std::f64::consts::{PI_2};
 
+use utils::{RefMut, CopyMut};
 use assets::{Cached};
-use state::{Group, Profile, Friend};
+use state::{State};
 use cairo::{Surface};
 use cairo::pango::{FontDescription};
 use cairo::{pango, LineCapRound};
@@ -16,24 +15,21 @@ pub static HEADER_HEIGHT: f64 = 60f64;
 pub static CONTROL_HEIGHT: f64 = 35f64;
 
 macro_rules! scale {
-    ($x:expr) => { self.scale * $x }
+    ($x:expr) => { self.scale.get() * $x }
 }
 
 pub struct Sidebar<'a> {
-    pub profile: Rc<RefCell<Profile<'a>>>,
-    pub groups:  Rc<RefCell<Vec<Group>>>,
-    pub friends: Rc<RefCell<Vec<Friend<'a>>>>,
+    pub state: RefMut<State<'a>>,
     pub scroll_top: f64,
-    pub scale: f64,
-    pub height: f64,
-    pub assets: Rc<RefCell<Cached<'a>>>,
+    pub scale: CopyMut<f64>,
+    pub height: CopyMut<f64>,
+    pub assets: RefMut<Cached<'a>>,
 }
 
 impl<'a> Sidebar<'a> {
     fn draw_header(&self, surface: &mut Surface) {
         let mut cx = surface.create();
-        let profile = self.profile.borrow();
-        let profile = self.profile.borrow();
+        let state = self.state.borrow();
 
         cx.rectangle(0.0, 0.0, scale!(WIDTH), scale!(HEADER_HEIGHT));
         cx.set_source_rgb(colors::DARK_GREY);
@@ -50,7 +46,7 @@ impl<'a> Sidebar<'a> {
         font.set_absolute_size(scale!(14.0));
         let mut layout = cx.create_pango_layout();
         layout.set_font_description(&font);
-        layout.set_text(profile.name.as_slice());
+        layout.set_text(state.profile.name.as_slice());
         cx.set_source_rgb(colors::WHITE);
         cx.show_pango_layout(&layout);
 
@@ -59,11 +55,11 @@ impl<'a> Sidebar<'a> {
         font.set_weight(pango::WeightNormal);
         font.set_absolute_size(scale!(11.0));
         layout.set_font_description(&font);
-        layout.set_text(profile.status.as_slice());
+        layout.set_text(state.profile.status.as_slice());
         cx.set_source_rgb(colors::LIGHT_GREY);
         cx.show_pango_layout(&layout);
 
-        match profile.avatar {
+        match state.profile.avatar {
             Some(ref a) => {
                 cx.set_source_surface(a, scale!(10.0), scale!(10.0));
                 cx.paint();
@@ -89,7 +85,7 @@ impl<'a> Sidebar<'a> {
         let mut cx = surface.create();
 
         let ch = scale!(CONTROL_HEIGHT);
-        cx.rectangle(0.0, self.height - ch, scale!(WIDTH), ch);
+        cx.rectangle(0.0, self.height.get() - ch, scale!(WIDTH), ch);
         cx.set_source_rgb(colors::DARK_GREY);
         cx.fill();
 
@@ -97,7 +93,7 @@ impl<'a> Sidebar<'a> {
         for (i, c) in [&a.add, &a.group, &a.transfer, &a.settings].iter().enumerate() {
             let x = (i as f64 * WIDTH/4.0) + 0.5 * WIDTH/4.0 - 7.7;
             let y = CONTROL_HEIGHT/2.0 + 8.0;
-            cx.set_source_surface(*c, scale!(x), self.height - scale!(y));
+            cx.set_source_surface(*c, scale!(x), self.height.get() - scale!(y));
             cx.paint();
         }
     }
@@ -117,21 +113,19 @@ impl<'a> Sidebar<'a> {
     }
 
     pub fn visible_height(&self) -> f64 {
-        self.height/self.scale - HEADER_HEIGHT - CONTROL_HEIGHT
+        self.height.get()/self.scale.get() - HEADER_HEIGHT - CONTROL_HEIGHT
     }
 
     pub fn list_height(&self) -> f64 {
-        let groups = self.groups.borrow();
-        let friends = self.friends.borrow();
-        40.0 + 50.0 * (groups.len() + friends.len()) as f64
+        let state = self.state.borrow();
+        40.0 + 50.0 * (state.groups.len() + state.friends.len()) as f64
     }
 
     fn draw_contacts(&self, surface: &mut Surface) {
-        let groups = self.groups.borrow();
-        let friends = self.friends.borrow();
+        let state = self.state.borrow();
         let assets = self.assets.borrow();
 
-        let height = self.height/self.scale - HEADER_HEIGHT - CONTROL_HEIGHT;
+        let height = self.height.get()/self.scale.get() - HEADER_HEIGHT - CONTROL_HEIGHT;
         if height < 0.0 {
             return;
         }
@@ -140,15 +134,14 @@ impl<'a> Sidebar<'a> {
                                                        scale!(WIDTH), scale!(height));
         let mut cx = surface.create();
 
-        cx.rectangle(0.0, 0.0, scale!(WIDTH), scale!(height));
         cx.set_source_rgb(colors::MEDIUM_GREY);
-        cx.fill();
+        cx.paint();
 
         let mut font = FontDescription::new();
         font.set_family("sans");
         let mut layout = cx.create_pango_layout();
 
-        let real_height = 40.0 + 50.0 * (groups.len() + friends.len()) as f64;
+        let real_height = 40.0 + 50.0 * (state.groups.len() + state.friends.len()) as f64;
         let top = self.scroll_top * real_height;
         let mut base = 0.0;
         if top <= 40.0 {
@@ -225,7 +218,7 @@ impl<'a> Sidebar<'a> {
             }
         };
 
-        for g in groups.iter() {
+        for g in state.groups.iter() {
             let icon = if g.unread {
                 &assets.online_new
             } else {
@@ -234,7 +227,7 @@ impl<'a> Sidebar<'a> {
             print_entry!(g.name, format!("{} users in chat", g.peers.len()), icon);
         }
 
-        for f in friends.iter() {
+        for f in state.friends.iter() {
             print_entry!(f.name, f.status, &assets.offline);
         }
 

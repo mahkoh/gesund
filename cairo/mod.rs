@@ -43,6 +43,11 @@ impl<'a> Cairo<'a> {
         unsafe { cairo_new_path(self.raw); }
     }
 
+    pub fn set_dash(&mut self, dashes: &[f64], offset: f64) {
+        unsafe { cairo_set_dash(self.raw, dashes.as_ptr(), dashes.len() as c_int,
+                                offset); }
+    }
+
     pub fn set_source_rgb(&mut self, rgb: RGB) {
         unsafe { cairo_set_source_rgb(self.raw, rgb.r, rgb.g, rgb.b); }
     }

@@ -1,5 +1,6 @@
 use tox::core::{UserStatus};
 use cairo::{Surface};
+use ui::textbox::{Textbox};
 
 pub struct Peer {
     pub id: i32,
@@ -25,4 +26,11 @@ pub struct Friend<'a> {
     pub status: String,
     pub avatar: Option<Surface<'a>>,
     pub userstatus: UserStatus,
+    pub textbox: Textbox,
+}
+
+pub struct State<'a> {
+    pub groups: Vec<Group>,
+    pub profile: Profile<'a>,
+    pub friends: Vec<Friend<'a>>,
 }
