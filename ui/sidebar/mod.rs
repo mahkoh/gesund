@@ -27,11 +27,16 @@ pub struct Sidebar<'a> {
 }
 
 impl<'a> Sidebar<'a> {
+    pub fn can_scroll(&self, x: f64, y: f64) -> bool {
+        x < scale!(WIDTH) && y >= scale!(HEADER_HEIGHT) &&
+            y < self.height.get() - scale!(CONTROL_HEIGHT)
+    }
+
     fn draw_header(&self, surface: &mut Surface) {
         let mut cx = surface.create();
         let state = self.state.borrow();
 
-        cx.rectangle(0.0, 0.0, scale!(WIDTH), scale!(HEADER_HEIGHT));
+        cx.rectangle(0.0, 0.0, scale!(WIDTH), scale!(HEADER_HEIGHT).ceil());
         cx.set_source_rgb(colors::DARK_GREY);
         cx.fill();
 
@@ -130,8 +135,9 @@ impl<'a> Sidebar<'a> {
             return;
         }
 
-        let mut surface = surface.create_for_rectangle(0.0, scale!(HEADER_HEIGHT),
-                                                       scale!(WIDTH), scale!(height));
+        let mut surface = surface.create_for_rectangle(0.0, scale!(HEADER_HEIGHT).ceil(),
+                                                       scale!(WIDTH).ceil(),
+                                                       scale!(height));
         let mut cx = surface.create();
 
         cx.set_source_rgb(colors::MEDIUM_GREY);

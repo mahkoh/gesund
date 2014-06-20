@@ -89,6 +89,15 @@ impl<'a> Layout<'a> {
     pub fn set_width(&mut self, width: f64) {
         unsafe { pango_layout_set_width(self.raw, (width*ll::PANGO_SCALE) as c_int); }
     }
+
+    pub fn xy_to_line(&mut self, x: f64, y: f64) -> uint {
+        let mut index: c_int = 0;
+        let mut trailing: c_int = 0;
+        unsafe { pango_layout_xy_to_index(self.raw, x as c_int, y as c_int,
+                                          &mut index as *mut c_int,
+                                          &mut trailing as *mut c_int); }
+        index as uint
+    }
 }
 
 impl<'a> Drop for Layout<'a> {

@@ -54,7 +54,7 @@ impl<'a> Ui<'a> {
         }
     }
 
-    pub fn scale(&mut self, val: f64) {
+    pub fn scale(&mut self, mut val: f64) {
         if val < 0.1 {
             val = 0.1;
         }

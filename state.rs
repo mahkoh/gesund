@@ -27,6 +27,7 @@ pub struct Friend<'a> {
     pub avatar: Option<Surface<'a>>,
     pub userstatus: UserStatus,
     pub textbox: Textbox,
+    //pub messages: Vec<Message>,
 }
 
 pub struct State<'a> {
