@@ -1,5 +1,3 @@
-#![feature(globs)]
-
 use libc::{c_int, c_uint};
 
 use self::ll::*;
@@ -12,6 +10,7 @@ mod glib;
 pub mod pango;
 pub mod svg;
 
+/*
 #[repr(C)]
 pub enum Antialias {
     AntialiasDefault  = 0,
@@ -22,6 +21,7 @@ pub enum Antialias {
     AntialiasGood     = 5,
     AntialiasBest     = 6,
 }
+*/
 
 #[repr(C)]
 pub enum LineCap {
@@ -39,9 +39,11 @@ impl<'a> Cairo<'a> {
         unsafe { cairo_set_line_width(self.raw, width); }
     }
 
+    /*
     pub fn new_path(&mut self) {
         unsafe { cairo_new_path(self.raw); }
     }
+    */
 
     pub fn set_dash(&mut self, dashes: &[f64], offset: f64) {
         unsafe { cairo_set_dash(self.raw, dashes.as_ptr(), dashes.len() as c_int,
@@ -60,19 +62,25 @@ impl<'a> Cairo<'a> {
         unsafe { cairo_rectangle(self.raw, x, y, width, height); }
     }
 
+    /*
     pub fn get_target<'b>(&'b mut self) -> Surface<'b> {
         let raw = unsafe { cairo_get_target(self.raw) };
         assert!(!raw.is_null());
         Surface { raw: raw }
     }
+    */
 
+    /*
     pub fn clip(&mut self) {
         unsafe { cairo_clip(self.raw); }
     }
+    */
 
+    /*
     pub fn set_antialias(&mut self, val: Antialias) {
         unsafe { cairo_set_antialias(self.raw, val as c_uint); }
     }
+    */
 
     pub fn rounded_rectangle(&mut self, x: f64, y: f64, width: f64, height: f64,
                              radius: f64) {
@@ -116,9 +124,11 @@ impl<'a> Cairo<'a> {
         unsafe { cairo_move_to(self.raw, x, y); }
     }
 
+    /*
     pub fn line_to(&mut self, x: f64, y: f64) {
         unsafe { cairo_line_to(self.raw, x, y); }
     }
+    */
 
     pub fn set_line_cap(&mut self, cap: LineCap) {
         unsafe { cairo_set_line_cap(self.raw, cap as c_uint); }
@@ -132,9 +142,11 @@ impl<'a> Cairo<'a> {
         unsafe { cairo_close_path(self.raw); }
     }
 
+    /*
     pub fn set_fill_rule(&mut self, rule: FillRule) {
         unsafe { cairo_set_fill_rule(self.raw, rule as c_uint); }
     }
+    */
 
     pub fn set_source_surface(&mut self, source: &Surface, x: f64, y: f64) {
         unsafe { cairo_set_source_surface(self.raw, source.raw, x, y); }
@@ -179,12 +191,14 @@ impl<'a> Surface<'a> {
         Surface { raw: raw }
     }
 
+    /*
     pub fn write_to_png(&self, path: &Path) {
         // XXX return value
         unsafe {
             path.with_c_str(|p| cairo_surface_write_to_png(self.raw, p));
         }
     }
+    */
 }
 
 impl<'a> Drop for Surface<'a> {
@@ -193,29 +207,33 @@ impl<'a> Drop for Surface<'a> {
     }
 }
 
+/*
 pub fn pdf_surface_create(dst: &Path, width: f64, height: f64) -> Surface {
     let raw = unsafe {
         dst.with_c_str(|p| cairo_pdf_surface_create(p, width, height))
     };
     Surface { raw: raw }
 }
+*/
 
 #[repr(C)]
 pub enum Format {
-    FormatInvalid   = ll::CAIRO_FORMAT_INVALID,
-    FormatArgb32    = ll::CAIRO_FORMAT_ARGB32,
-    FormatRgb24     = ll::CAIRO_FORMAT_RGB24,
-    FormatA8        = ll::CAIRO_FORMAT_A8,
-    FormatA1        = ll::CAIRO_FORMAT_A1,
-    FormatRgb16_565 = ll::CAIRO_FORMAT_RGB16_565,
-    FormatRgb30     = ll::CAIRO_FORMAT_RGB30,
+    FormatInvalid  = ll::CAIRO_FORMAT_INVALID,
+    FormatArgb32   = ll::CAIRO_FORMAT_ARGB32,
+    FormatRgb24    = ll::CAIRO_FORMAT_RGB24,
+    FormatA8       = ll::CAIRO_FORMAT_A8,
+    FormatA1       = ll::CAIRO_FORMAT_A1,
+    FormatRgb16565 = ll::CAIRO_FORMAT_RGB16_565,
+    FormatRgb30    = ll::CAIRO_FORMAT_RGB30,
 }
 
+/*
 #[repr(C)]
 pub enum FillRule {
     Winding = ll::CAIRO_FILL_RULE_WINDING,
     EvenOdd = ll::CAIRO_FILL_RULE_EVEN_ODD,
 }
+*/
 
 #[repr(C)]
 pub enum Content {

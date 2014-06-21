@@ -29,20 +29,23 @@ pub struct Friend<'a> {
     pub avatar: Option<Surface<'a>>,
     pub userstatus: UserStatus,
     pub textbox: Textbox,
-    // pub messages: Vec<Message>,
+    pub messages: Vec<Message>,
 }
 
+#[deriving(Clone)]
 pub struct Message {
     pub from_friend: bool,
-    pub text: String,
+    pub content: MessageType,
     pub time: Tm,
 }
 
+#[deriving(Clone)]
 pub enum MessageType {
     TextMessage(String),
     FileMessage(RefMut<FileTransfer>),
 }
 
+#[deriving(Clone)]
 pub struct FileTransfer {
     pub name: String,
 }

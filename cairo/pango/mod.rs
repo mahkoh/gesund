@@ -20,6 +20,14 @@ pub enum Weight {
     WeightUltraheavy = 1000
 }
 
+#[repr(C)]
+pub enum Alignment {
+  AlignLeft,
+  AlignCenter,
+  AlignRight
+}
+
+#[repr(C)]
 pub struct Rectangle {
     x: i32,
     y: i32,
@@ -71,6 +79,10 @@ impl<'a> Layout<'a> {
         unsafe { pango_layout_set_font_description(self.raw, desc.raw as *_); }
     }
 
+    pub fn set_alignment(&mut self, alignment: Alignment) {
+        unsafe { pango_layout_set_alignment(self.raw, alignment); }
+    }
+
     pub fn set_text(&mut self, text: &str) {
         unsafe {
             pango_layout_set_text(self.raw, text.as_ptr() as *_, text.len() as c_int);
@@ -90,6 +102,11 @@ impl<'a> Layout<'a> {
         unsafe { pango_layout_set_width(self.raw, (width*ll::PANGO_SCALE) as c_int); }
     }
 
+    pub fn set_height(&mut self, height: int) {
+        unsafe { pango_layout_set_height(self.raw, height as c_int); }
+    }
+
+    /*
     pub fn xy_to_line(&mut self, x: f64, y: f64) -> uint {
         let mut index: c_int = 0;
         let mut trailing: c_int = 0;
@@ -98,6 +115,7 @@ impl<'a> Layout<'a> {
                                           &mut trailing as *mut c_int); }
         index as uint
     }
+    */
 }
 
 impl<'a> Drop for Layout<'a> {

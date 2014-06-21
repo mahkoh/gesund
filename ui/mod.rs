@@ -4,7 +4,7 @@ use std::cell::{RefCell, Cell};
 use utils::{RefMut, CopyMut};
 use state::{State};
 use assets::{Assets, Cached};
-use cairo::{Surface};
+use cairo::{Surface, image_surface_create, FormatArgb32};
 use self::sidebar::{Sidebar};
 use self::chatwin::{Chatwin};
 
@@ -13,6 +13,8 @@ pub mod chatwin;
 pub mod textbox;
 
 pub struct Ui<'a> {
+    pub paper: Surface<'a>,
+
     pub assets: Assets<'a>,
     pub cached: RefMut<Cached<'a>>,
     pub sidebar: sidebar::Sidebar<'a>,
@@ -44,6 +46,9 @@ impl<'a> Ui<'a> {
             num: None,
         };
         Ui {
+            paper: image_surface_create(FormatArgb32, width.get() as i32,
+                                        height.get() as i32),
+
             assets: assets,
             cached: cached,
             sidebar: sidebar,
@@ -77,7 +82,9 @@ impl<'a> Ui<'a> {
         self.chatwin.num = Some(id);
     }
 
+    /*
     pub fn unset_friend(&mut self) {
         self.chatwin.num = None;
     }
+    */
 }

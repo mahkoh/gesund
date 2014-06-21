@@ -11,6 +11,7 @@ pub struct Handle {
 }
 
 impl Handle {
+    /*
     pub fn from_file(path: &Path) -> Option<Handle> {
         let raw = path.with_c_str(|p| unsafe { 
             rsvg_handle_new_from_file(p, 0 as *mut _)
@@ -21,6 +22,7 @@ impl Handle {
             Some(Handle { raw: raw })
         }
     }
+    */
 
     pub fn from_slice(data: &[u8]) -> Option<Handle> {
         let raw = unsafe {

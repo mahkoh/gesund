@@ -1,5 +1,3 @@
-#![feature(macro_rules)]
-
 use std::f64::consts::{PI_2};
 
 use utils::{RefMut, CopyMut};
@@ -207,7 +205,6 @@ impl<'a> Sidebar<'a> {
                     font.set_absolute_size(scale!(12.0));
                     layout.set_font_description(&font);
                     layout.set_text($name.as_slice());
-                    let (w, h) = layout.get_extends();
                     cx.move_to(scale!(73.5), scale!(y+6.0));
                     cx.set_source_rgb(colors::WHITE);
                     cx.show_pango_layout(&layout);

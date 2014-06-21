@@ -32,8 +32,10 @@ extern {
                                     ink_rect: *mut pango::Rectangle,
                                     logical_rectangle: *mut pango::Rectangle);
     pub fn pango_layout_set_width(layout: *mut PangoLayout, width: c_int);
+    pub fn pango_layout_set_height(layout: *mut PangoLayout, height: c_int);
     pub fn pango_layout_xy_to_index(layout: *mut PangoLayout, x: c_int, y: c_int,
                                     index: *mut c_int, trailing: *mut c_int);
+    pub fn pango_layout_set_alignment(layout: *mut PangoLayout, a: pango::Alignment);
 
     pub fn pango_cairo_create_layout(cr: *mut cairo::ll::cairo_t) -> *mut PangoLayout;
     pub fn pango_cairo_show_layout(cr: *mut cairo::ll::cairo_t, layout: *mut PangoLayout);
