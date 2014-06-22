@@ -12,12 +12,14 @@ use ui;
 use ui::{Ui};
 use ui::textbox::{Textbox};
 
-use tox::core::{/*Tox,*/ UserStatusNone};
+use tox::core::{Tox, UserStatusNone};
 
 use cairo;
 
 use sdl2;
 use sdl2::video::{Window};
+
+use bootstrap::{bootstrap};
 
 static START_WIDTH: int = 600;
 static START_HEIGHT: int = 500;
@@ -26,7 +28,7 @@ pub struct Gesund<'a> {
     // state: RefMut<State<'a>>,
     ui: Ui<'a>,
     window: Window,
-    // tox: Tox,
+    tox: Tox,
 }
 
 #[unsafe_destructor]
@@ -101,7 +103,7 @@ impl<'a> Gesund<'a> {
             // state: state,
             ui: ui,
             window: window,
-            // tox: Tox::new(true).unwrap(),
+            tox: bootstrap(),
         }
     }
 
@@ -110,7 +112,7 @@ impl<'a> Gesund<'a> {
             let mut redraw = false;
 
             'event : loop {
-                let ev = match sdl2::event::wait_event() {
+                let ev = match sdl2::event::wait_event_timeout(30) {
                     Ok(e) => e,
                     Err(..) => break 'event,
                 };
@@ -154,6 +156,10 @@ impl<'a> Gesund<'a> {
                 }
             }
 
+            for event in self.tox.events() {
+                println!("{:?}", event);
+            }
+
             if redraw {
                 {
                     let (w, h) = self.window.get_size();
@@ -167,7 +173,8 @@ impl<'a> Gesund<'a> {
                                                              self.ui.width.get() as i32,
                                                              self.ui.height.get() as i32,
                                                              stride);
-                    self.ui.draw_all(&mut surface);
+                    self.ui.render();
+                    self.ui.blip(&mut surface);
                 });
                 self.window.update_surface();
             }

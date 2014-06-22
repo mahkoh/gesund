@@ -10,6 +10,7 @@ use ui;
 use std::f64::consts::{FRAC_PI_2};
 
 pub struct Chatwin<'a> {
+    pub paper: RefMut<Surface<'a>>,
     pub state: RefMut<State<'a>>,
     pub assets: RefMut<Cached<'a>>,
     pub height: CopyMut<f64>,
@@ -35,13 +36,14 @@ macro_rules! scale {
 }
 
 impl<'a> Chatwin<'a> {
-    pub fn draw_all(&self, surface: &mut Surface) {
+    pub fn render(&mut self) {
         if self.num.is_none() {
             return;
         }
 
         // temporary
         {
+            let mut surface = self.paper.borrow_mut();
             let mut surface = surface.create_for_rectangle(scale!(LEFT), 0.0,
                                                            self.width.get(),
                                                            self.height.get());
@@ -49,12 +51,13 @@ impl<'a> Chatwin<'a> {
             cx.set_source_rgb(colors::WHITE);
             cx.paint();
         }
-        self.draw_header(surface);
-        self.draw_textbox(surface);
-        self.draw_messages(surface);
+        self.draw_header();
+        self.draw_textbox();
+        self.draw_messages();
     }
 
-    pub fn draw_textbox(&self, surface: &mut Surface) {
+    pub fn draw_textbox(&mut self) {
+        let mut surface = self.paper.borrow_mut();
         let assets = self.assets.borrow();
 
         let top = self.height.get() - scale!(TEXTBOX_HEIGHT + 10.0);
@@ -106,10 +109,11 @@ impl<'a> Chatwin<'a> {
         cx.paint();
     }
 
-    pub fn draw_messages(&self, surface: &mut Surface) {
+    pub fn draw_messages(&self) {
         if self.num.is_none() {
             return;
         }
+        let mut surface = self.paper.borrow_mut();
         let state = self.state.borrow();
         let friend = state.friends.get(self.num.unwrap());
         let profile = &state.profile;
@@ -189,10 +193,11 @@ impl<'a> Chatwin<'a> {
     }
     */
 
-    pub fn draw_header(&self, surface: &mut Surface) {
+    pub fn draw_header(&mut self) {
         if self.num.is_none() {
             return;
         }
+        let mut surface = self.paper.borrow_mut();
         let state = self.state.borrow();
         let assets = self.assets.borrow();
         let friend = state.friends.get(self.num.unwrap());

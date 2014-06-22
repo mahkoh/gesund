@@ -13,8 +13,7 @@ pub mod chatwin;
 pub mod textbox;
 
 pub struct Ui<'a> {
-    pub paper: Surface<'a>,
-
+    pub paper: RefMut<Surface<'a>>,
     pub assets: Assets<'a>,
     pub cached: RefMut<Cached<'a>>,
     pub sidebar: sidebar::Sidebar<'a>,
@@ -30,7 +29,11 @@ impl<'a> Ui<'a> {
         let cached = Rc::new(RefCell::new(assets.cache(1.0)));
         let width = Rc::new(Cell::new(500.0f64));
         let height = Rc::new(Cell::new(500.0f64));
+        let paper = image_surface_create(FormatArgb32, width.get() as i32,
+                                         height.get() as i32);
+        let paper = Rc::new(RefCell::new(paper));
         let sidebar = Sidebar {
+            paper: paper.clone(),
             state: state.clone(),
             scroll_top: 0.0,
             scale: scale.clone(),
@@ -39,6 +42,7 @@ impl<'a> Ui<'a> {
         };
         let chatwin = Chatwin {
             state: state,
+            paper: paper.clone(),
             assets: cached.clone(),
             scale: scale.clone(),
             height: height.clone(),
@@ -46,9 +50,7 @@ impl<'a> Ui<'a> {
             num: None,
         };
         Ui {
-            paper: image_surface_create(FormatArgb32, width.get() as i32,
-                                        height.get() as i32),
-
+            paper: paper,
             assets: assets,
             cached: cached,
             sidebar: sidebar,
@@ -71,11 +73,19 @@ impl<'a> Ui<'a> {
     pub fn resize(&mut self, width: f64, height: f64) {
         self.width.set(width);
         self.height.set(height);
+        let mut paper = self.paper.borrow_mut();
+        *paper = image_surface_create(FormatArgb32, width as i32, height as i32);
     }
 
-    pub fn draw_all(&self, surface: &mut Surface) {
-        self.sidebar.draw_all(surface);
-        self.chatwin.draw_all(surface);
+    pub fn render(&mut self) {
+        self.sidebar.render();
+        self.chatwin.render();
+    }
+
+    pub fn blip(&self, dst: &mut Surface) {
+        let mut cx = dst.create();
+        cx.set_source_surface(&*self.paper.borrow(), 0.0, 0.0);
+        cx.paint();
     }
 
     pub fn set_friend(&mut self, id: uint) {

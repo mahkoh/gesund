@@ -17,6 +17,7 @@ macro_rules! scale {
 }
 
 pub struct Sidebar<'a> {
+    pub paper: RefMut<Surface<'a>>,
     pub state: RefMut<State<'a>>,
     pub scroll_top: f64,
     pub scale: CopyMut<f64>,
@@ -30,7 +31,8 @@ impl<'a> Sidebar<'a> {
             y < self.height.get() - scale!(CONTROL_HEIGHT)
     }
 
-    fn draw_header(&self, surface: &mut Surface) {
+    fn draw_header(&mut self) {
+        let mut surface = self.paper.borrow_mut();
         let mut cx = surface.create();
         let state = self.state.borrow();
 
@@ -84,7 +86,8 @@ impl<'a> Sidebar<'a> {
         cx.fill();
     }
     
-    fn draw_controls(&self, surface: &mut Surface) {
+    fn draw_controls(&mut self) {
+        let mut surface = self.paper.borrow_mut();
         let mut cx = surface.create();
 
         let ch = scale!(CONTROL_HEIGHT);
@@ -124,9 +127,10 @@ impl<'a> Sidebar<'a> {
         40.0 + 50.0 * (state.groups.len() + state.friends.len()) as f64
     }
 
-    fn draw_contacts(&self, surface: &mut Surface) {
+    fn draw_contacts(&mut self) {
         let state = self.state.borrow();
         let assets = self.assets.borrow();
+        let mut surface = self.paper.borrow_mut();
 
         let height = self.height.get()/self.scale.get() - HEADER_HEIGHT - CONTROL_HEIGHT;
         if height < 0.0 {
@@ -248,9 +252,9 @@ impl<'a> Sidebar<'a> {
         cx.stroke();
     }
 
-    pub fn draw_all(&self, surface: &mut Surface) {
-        self.draw_header(surface);
-        self.draw_controls(surface);
-        self.draw_contacts(surface);
+    pub fn render(&mut self) {
+        self.draw_header();
+        self.draw_controls();
+        self.draw_contacts();
     }
 }
