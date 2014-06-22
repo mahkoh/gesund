@@ -3,6 +3,7 @@ use tox::core::{Tox};
 pub fn bootstrap() -> Tox {
     let tox = Tox::new(true).unwrap();
 
+    /*
     let addresses = [
         ("192.254.75.98",   33445, "951C88B7E75C867418ACDB5D273821372BB5BD652740BCDF623A4FA293E75D2F"),
         ("144.76.60.215",   33445, "04119E835DF3E78BACF0F84235B300546AF8B936F035185E2A8E9E0A67C8924F"),
@@ -23,6 +24,7 @@ pub fn bootstrap() -> Tox {
         "56A1ADE4B65B86BCD51CC73E2CD4E542179F47959FE3E0E21B4B0ACDADE51855D34D34D37CB5";
     let groupbot = box from_str(groupbot_addr).unwrap();
     tox.add_friend(groupbot, "hi".to_string());
+    */
 
     tox
 }

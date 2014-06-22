@@ -17,6 +17,10 @@ pub struct Chatwin<'a> {
     pub width: CopyMut<f64>,
     pub scale: CopyMut<f64>,
     pub num: Option<uint>,
+
+    pub header_dirty: bool,
+    pub textbox_dirty: bool,
+    pub scroll_dirty: bool,
 }
 
 pub static LEFT: f64 = ui::sidebar::WIDTH;
@@ -41,27 +45,31 @@ impl<'a> Chatwin<'a> {
             return;
         }
 
-        // temporary
-        {
-            let mut surface = self.paper.borrow_mut();
-            let mut surface = surface.create_for_rectangle(scale!(LEFT), 0.0,
-                                                           self.width.get(),
-                                                           self.height.get());
-            let mut cx = surface.create();
-            cx.set_source_rgb(colors::WHITE);
-            cx.paint();
-        }
         self.draw_header();
         self.draw_textbox();
         self.draw_messages();
     }
 
     pub fn draw_textbox(&mut self) {
+        if !self.textbox_dirty || self.num.is_none() {
+            return;
+        }
+
         let mut surface = self.paper.borrow_mut();
         let assets = self.assets.borrow();
 
         let top = self.height.get() - scale!(TEXTBOX_HEIGHT + 10.0);
         let width = self.width.get() - scale!(LEFT + 100.0);
+        {
+            let mut surface = surface.create_for_rectangle(
+                scale!(LEFT),
+                self.height.get() - scale!(TEXTBOX_HEIGHT + 2.0*PADDING),
+                self.width.get() - scale!(LEFT),
+                scale!(TEXTBOX_HEIGHT + 2.0*PADDING));
+            let mut cx = surface.create();
+            cx.set_source_rgb(colors::WHITE);
+            cx.paint();
+        }
         {
             let mut surface = surface.create_for_rectangle(scale!(LEFT+10.0), top, width,
                                                            scale!(TEXTBOX_HEIGHT));
@@ -107,10 +115,12 @@ impl<'a> Chatwin<'a> {
             self.width.get() - scale!(PADDING + BIG_BUTTON_WIDTH/2.0 + BIG_ICON_SIZE/2.0),
             top + scale!(TEXTBOX_HEIGHT/2.0 - BIG_ICON_SIZE/2.0));
         cx.paint();
+
+        self.textbox_dirty = false;
     }
 
-    pub fn draw_messages(&self) {
-        if self.num.is_none() {
+    pub fn draw_messages(&mut self) {
+        if !self.scroll_dirty || self.num.is_none() {
             return;
         }
         let mut surface = self.paper.borrow_mut();
@@ -125,6 +135,9 @@ impl<'a> Chatwin<'a> {
             width,
             self.height.get() - scale!(HEADER_HEIGHT + TEXTBOX_HEIGHT + 2.0 * PADDING));
         let mut cx = surface.create();
+        cx.set_source_rgb(colors::WHITE);
+        cx.paint();
+        cx.set_source_rgb(colors::BLACK);
 
         // static NAME_WIDTH: f64 = 60f64;
         // static TIME_WIDTH: f64 = 45f64;
@@ -177,24 +190,12 @@ impl<'a> Chatwin<'a> {
             last_friend = msg.from_friend;
             base = new_base;
         }
-    }
 
-    /*
-    pub fn rel_to_textbox(&self, x: f64, y: f64) -> Option<(f64, f64)> {
-        let left = scale!(LEFT+10.0+textbox::PADDING);
-        let right = self.width.get() - scale!(LEFT+105.0+textbox::PADDING);
-        let top = self.height.get() - scale!(TEXTBOX_HEIGHT+10.0-textbox::PADDING);
-        let bottom = self.height.get() - scale!(10+textbox::PADDING);
-        if x < left || x > right || y < top || y > bottom {
-            None
-        } else {
-            Some((x - left, y - top))
-        }
+        self.scroll_dirty = false;
     }
-    */
 
     pub fn draw_header(&mut self) {
-        if self.num.is_none() {
+        if !self.header_dirty || self.num.is_none() {
             return;
         }
         let mut surface = self.paper.borrow_mut();
@@ -275,5 +276,13 @@ impl<'a> Chatwin<'a> {
             width - scale!(BIG_BUTTON_WIDTH+PADDING - BIG_BUTTON_WIDTH/2.0 + BIG_ICON_SIZE/2.0),
             scale!(PADDING + BIG_BUTTON_HEIGHT/2.0 - BIG_ICON_SIZE/2.0));
         cx.paint();
+
+        self.header_dirty = false;
+    }
+
+    pub fn all_dirty(&mut self) {
+        self.header_dirty = true;
+        self.scroll_dirty = true;
+        self.textbox_dirty = true;
     }
 }

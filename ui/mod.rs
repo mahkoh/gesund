@@ -21,6 +21,7 @@ pub struct Ui<'a> {
     pub scale: CopyMut<f64>,
     pub width: CopyMut<f64>,
     pub height: CopyMut<f64>,
+    pub should_blip: bool,
 }
 
 impl<'a> Ui<'a> {
@@ -39,6 +40,9 @@ impl<'a> Ui<'a> {
             scale: scale.clone(),
             height: height.clone(),
             assets: cached.clone(),
+            header_dirty: true,
+            controls_dirty: true,
+            scroll_dirty: true,
         };
         let chatwin = Chatwin {
             state: state,
@@ -48,6 +52,9 @@ impl<'a> Ui<'a> {
             height: height.clone(),
             width: width.clone(),
             num: None,
+            header_dirty: true,
+            scroll_dirty: true,
+            textbox_dirty: true,
         };
         Ui {
             paper: paper,
@@ -58,6 +65,7 @@ impl<'a> Ui<'a> {
             scale: scale,
             width: width,
             height: height,
+            should_blip: true,
         }
     }
 
@@ -70,11 +78,15 @@ impl<'a> Ui<'a> {
         *cached = self.assets.cache(val);
     }
 
-    pub fn resize(&mut self, width: f64, height: f64) {
-        self.width.set(width);
-        self.height.set(height);
+    pub fn resize(&mut self, width: int, height: int) -> bool {
+        if self.width.get() as int == width && self.height.get() as int == height {
+            return false;
+        }
+        self.width.set(width as f64);
+        self.height.set(height as f64);
         let mut paper = self.paper.borrow_mut();
         *paper = image_surface_create(FormatArgb32, width as i32, height as i32);
+        return true;
     }
 
     pub fn render(&mut self) {
@@ -90,6 +102,11 @@ impl<'a> Ui<'a> {
 
     pub fn set_friend(&mut self, id: uint) {
         self.chatwin.num = Some(id);
+    }
+
+    pub fn all_dirty(&mut self) {
+        self.sidebar.all_dirty();
+        self.chatwin.all_dirty();
     }
 
     /*

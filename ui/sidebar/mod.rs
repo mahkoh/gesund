@@ -23,6 +23,10 @@ pub struct Sidebar<'a> {
     pub scale: CopyMut<f64>,
     pub height: CopyMut<f64>,
     pub assets: RefMut<Cached<'a>>,
+
+    pub header_dirty: bool,
+    pub controls_dirty: bool,
+    pub scroll_dirty: bool,
 }
 
 impl<'a> Sidebar<'a> {
@@ -32,6 +36,10 @@ impl<'a> Sidebar<'a> {
     }
 
     fn draw_header(&mut self) {
+        if !self.header_dirty {
+            return;
+        }
+
         let mut surface = self.paper.borrow_mut();
         let mut cx = surface.create();
         let state = self.state.borrow();
@@ -84,9 +92,15 @@ impl<'a> Sidebar<'a> {
         cx.set_source_rgb(colors::GREEN);
         cx.arc(scale!(WIDTH - 20.0), scale!(30.0), scale!(5.0), 0.0, PI_2);
         cx.fill();
+
+        self.header_dirty = false;
     }
     
     fn draw_controls(&mut self) {
+        if !self.controls_dirty {
+            return;
+        }
+
         let mut surface = self.paper.borrow_mut();
         let mut cx = surface.create();
 
@@ -102,6 +116,8 @@ impl<'a> Sidebar<'a> {
             cx.set_source_surface(*c, scale!(x), self.height.get() - scale!(y));
             cx.paint();
         }
+
+        self.controls_dirty = false;
     }
 
     pub fn scroll(&mut self, x: int) {
@@ -128,6 +144,10 @@ impl<'a> Sidebar<'a> {
     }
 
     fn draw_contacts(&mut self) {
+        if !self.scroll_dirty {
+            return;
+        }
+
         let state = self.state.borrow();
         let assets = self.assets.borrow();
         let mut surface = self.paper.borrow_mut();
@@ -250,11 +270,19 @@ impl<'a> Sidebar<'a> {
         cx.set_source_rgb(colors::DARK_GREY);
         cx.set_line_cap(LineCapRound);
         cx.stroke();
+
+        self.scroll_dirty = false;
     }
 
     pub fn render(&mut self) {
         self.draw_header();
         self.draw_controls();
         self.draw_contacts();
+    }
+
+    pub fn all_dirty(&mut self) {
+        self.header_dirty = true;
+        self.controls_dirty = true;
+        self.scroll_dirty = true;
     }
 }
